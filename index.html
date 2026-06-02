@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodDeal — Logistics Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--sidebar:#0a0f1a;--panel:#131c2e;--card:#1a2540;--card2:#1e2d47;
+  --border:#1f2d45;--border2:#263552;
+  --cyan:#00e5c0;--cyan2:#00b89a;--cyan-dim:rgba(0,229,192,.12);
+  --orange:#f5a623;--red:#ff4f4f;--amber:#f5a623;
+  --text:#e2e8f8;--text2:#7a8db3;--text3:#4a5a7a;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px;display:flex;min-height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ─── SIDEBAR ─── */
+.sidebar{width:220px;min-width:220px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-logo-icon{width:34px;height:34px;background:var(--cyan);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-icon svg{width:18px;height:18px}
+.sb-logo-name{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.sb-logo-role{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase}
+.kpi-section{padding:16px 14px 12px}
+.kpi-label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 10px 8px}
+.kpi-k{font-size:8px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.kpi-v{font-size:15px;font-weight:700;font-family:var(--mono);color:var(--cyan);line-height:1}
+.kpi-v.orange{color:var(--orange)}
+.kpi-v.white{color:var(--text)}
+.kpi-delta{font-size:9px;color:var(--cyan);margin-top:3px;font-family:var(--mono)}
+.kpi-delta.orange{color:var(--orange)}
+.kpi-delta.muted{color:var(--text3);font-family:var(--sans)}
+.alert-bar{margin:8px 14px;background:rgba(255,79,79,.13);border:1px solid rgba(255,79,79,.28);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:6px}
+.alert-dot{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.alert-text{font-size:10px;color:#ff8080;font-weight:500}
+.sb-section{padding:10px 14px 6px}
+.sb-section-label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--text2);font-size:12px;font-weight:500;transition:all .15s;margin-bottom:2px}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,229,192,.2)}
+.nav-icon{width:16px;height:16px;opacity:.7;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{background:var(--cyan);color:#0a1a12;font-size:8px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:auto;letter-spacing:.04em}
+.sb-user{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.user-avatar{width:32px;height:32px;background:linear-gradient(135deg,#1a3a5c,#0d2040);border:1.5px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--cyan);flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text)}
+.user-title{font-size:10px;color:var(--text3)}
+.user-live{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--cyan);margin-top:2px}
+.user-live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--cyan);animation:pulse 1.4s infinite}
+.sign-out{width:100%;padding:8px;background:rgba(255,79,79,.1);border:1px solid rgba(255,79,79,.25);border-radius:7px;color:#ff8080;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.sign-out:hover{background:rgba(255,79,79,.18)}
+
+/* ─── MAIN ─── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{background:var(--sidebar);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.tb-title{font-size:14px;font-weight:600;color:var(--text)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:var(--cyan);letter-spacing:.1em}
+.live-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 1.4s infinite}
+.tb-time{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.main-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--sidebar);padding:0 24px;flex-shrink:0}
+.main-tab{padding:11px 18px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.02em;white-space:nowrap}
+.main-tab:hover{color:var(--text2)}
+.main-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.view{display:none}.view.active{display:block}
+
+/* ─── FORM COMPONENTS ─── */
+.panel-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.pc-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.pc-head-icon{font-size:13px}
+.pc-head-title{font-size:12px;font-weight:600;color:var(--text)}
+.pc-head-sub{font-size:10px;color:var(--text3);margin-left:auto}
+.pc-body{padding:16px 18px}
+.form-row{display:grid;gap:12px;margin-bottom:12px}
+.fg-2{grid-template-columns:repeat(2,1fr)}
+.fg-3{grid-template-columns:repeat(3,1fr)}
+.fg-4{grid-template-columns:repeat(4,1fr)}
+.fg-5{grid-template-columns:repeat(5,1fr)}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase}
+.field input,.field select{background:#0d1625;border:1px solid var(--border2);border-radius:7px;padding:8px 11px;font-size:12px;font-family:var(--sans);color:var(--text);transition:border .15s;-webkit-appearance:none}
+.field input:focus,.field select:focus{outline:none;border-color:var(--cyan);background:#0f1c30}
+.field select option{background:#131c2e}
+.field-hint{font-size:9px;color:var(--text3);margin-top:1px}
+.sub-label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sub-label::after{content:'';flex:1;height:1px;background:var(--border)}
+hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+
+/* ─── UAE ANALYSIS PANEL ─── */
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.analysis-grid-3{grid-template-columns:repeat(3,1fr)}
+
+.analysis-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;overflow:hidden}
+.ac-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.ac-head-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ac-head-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.ac-body{padding:12px 14px}
+
+.margin-badge-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.mbadge{padding:3px 10px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.04em}
+.mbadge.hidden{background:rgba(255,79,79,.15);color:#ff8080;border:1px solid rgba(255,79,79,.25)}
+.mbadge.visible{background:rgba(0,229,192,.12);color:var(--cyan);border:1px solid rgba(0,229,192,.2)}
+.mbadge.sometimes{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+
+/* Internal vs Customer sheet tables */
+.sheet-table{width:100%;border-collapse:collapse}
+.sheet-table th{background:rgba(0,0,0,.3);padding:7px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.sheet-table th:last-child{text-align:right}
+.sheet-table td{padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px;font-family:var(--mono);color:var(--text2)}
+.sheet-table td:first-child{font-family:var(--sans);color:var(--text2)}
+.sheet-table td:last-child{text-align:right;color:var(--text)}
+.sheet-table tr:last-child td{border-bottom:none;font-weight:700}
+.sheet-table tr:last-child td:last-child{color:var(--cyan)}
+.sheet-table .real{color:var(--text2)}
+.sheet-table .charged{color:var(--cyan)}
+.sheet-table .diff{color:var(--orange)}
+
+/* Stacked cost comparison bars */
+.cost-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.cbr-label{font-size:11px;color:var(--text2);width:120px;flex-shrink:0}
+.cbr-bars{flex:1;display:flex;flex-direction:column;gap:3px}
+.cbr-bar{height:8px;border-radius:4px;transition:width .5s}
+.cbr-bar.real{background:var(--border2)}
+.cbr-bar.charged{background:var(--cyan);opacity:.85}
+.cbr-vals{font-size:10px;font-family:var(--mono);white-space:nowrap;text-align:right;min-width:80px}
+.cbr-vals .cv-real{color:var(--text3)}
+.cbr-vals .cv-charged{color:var(--cyan)}
+
+/* Strategy callout */
+.strategy-callout{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.25);border-radius:10px;padding:14px 16px}
+.sc-title{font-size:10px;font-weight:700;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sc-body{font-size:12px;color:var(--text2);line-height:1.7}
+.sc-highlight{color:var(--text);font-weight:600}
+.sc-tag{display:inline-block;background:rgba(245,166,35,.18);color:var(--amber);font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin:0 2px}
+
+/* Quote preview */
+.quote-preview{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;margin-top:10px}
+.qp-label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.qp-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.qp-row:last-child{border-bottom:none}
+.qp-prod{font-size:13px;font-weight:600;color:var(--text)}
+.qp-price{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan)}
+.qp-inco{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* ─── INCOTERM SECTION ─── */
+.inco-section{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.inco-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.inco-head-title{font-size:12px;font-weight:600;color:var(--text)}
+.inco-head-sub{font-size:10px;color:var(--text3);margin-left:8px}
+.tab-bar{display:flex;gap:6px;padding:14px 18px 0;border-bottom:1px solid var(--border)}
+.tab{padding:8px 16px 10px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;color:var(--text3);transition:all .15s;display:flex;align-items:center;gap:5px;position:relative;top:1px;background:transparent}
+.tab:hover{color:var(--text2);background:rgba(255,255,255,.03)}
+.tab.active{background:var(--card2);border-color:var(--border2);border-bottom-color:var(--card2);color:var(--cyan)}
+.inco-body{padding:18px}
+.chain-visual{display:flex;align-items:center;margin-bottom:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.cv-item{flex:1;padding:10px 8px;text-align:center;cursor:pointer;transition:background .15s}
+.cv-item:hover{background:rgba(255,255,255,.03)}
+.cv-item.active{background:var(--cyan-dim)}
+.cv-item .cv-code{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--text3)}
+.cv-item.active .cv-code{color:var(--cyan)}
+.cv-item .cv-amt{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.cv-item.active .cv-amt{color:var(--text2)}
+.cv-arrow{color:var(--text3);font-size:12px;padding:0 2px;align-self:center;flex-shrink:0}
+.inco-def{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px}
+.inco-def-icon{font-size:26px;flex-shrink:0}
+.inco-def-title{font-size:14px;font-weight:700;color:var(--cyan);margin-bottom:3px}
+.inco-def-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.inco-def-example{font-size:11px;color:var(--text3);margin-top:6px;font-style:italic}
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.split-card{border-radius:9px;padding:14px 16px}
+.split-card.seller{background:rgba(0,229,192,.07);border:1px solid rgba(0,229,192,.2)}
+.split-card.buyer{background:rgba(255,79,79,.06);border:1px solid rgba(255,79,79,.18)}
+.split-head{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.split-head.sh{color:var(--cyan)}.split-head.bh{color:#ff8080}
+.split-head::before{content:'';width:8px;height:8px;border-radius:2px}
+.split-head.sh::before{background:var(--cyan)}.split-head.bh::before{background:#ff6060}
+.split-item{font-size:11px;color:var(--text2);padding:4px 0;display:flex;align-items:flex-start;gap:6px;border-bottom:1px solid rgba(255,255,255,.05)}
+.split-item:last-child{border-bottom:none}
+.split-card.seller .split-item::before{content:'✓';color:var(--cyan);flex-shrink:0;font-size:10px}
+.split-card.buyer .split-item::before{content:'·';color:var(--text3);flex-shrink:0}
+
+/* ─── BREAKDOWN TABLE ─── */
+.breakdown-section{background:var(--card);border:1px solid var(--border2);border-radius:10px;overflow:hidden}
+.bs-head{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.bs-head-title{font-size:11px;font-weight:600;color:var(--text)}
+.bt{width:100%;border-collapse:collapse}
+.bt td{padding:9px 16px;border-bottom:1px solid var(--border);font-size:12px;font-family:var(--mono)}
+.bt td:last-child{text-align:right}
+.bt tr:last-child td{border-bottom:none}
+.bt .rl{font-family:var(--sans);color:var(--text2)}
+.bt .rv{color:var(--text)}
+.bt .neg{color:#ff8080}
+.bt .row-sub td{background:rgba(255,255,255,.015)}
+.bt .row-sub .rl{padding-left:24px;color:var(--text3);font-size:11px}
+.bt .row-sub .rv{color:var(--text3);font-size:11px}
+.bt .row-total td{background:rgba(0,229,192,.06);border-top:1px solid rgba(0,229,192,.2)}
+.bt .row-total .rl{color:var(--text);font-weight:600;font-family:var(--sans)}
+.bt .row-total .rv{color:var(--cyan);font-weight:700;font-size:14px}
+
+/* ─── FREIGHT ─── */
+.freight-section{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.sec-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.sec-head-icon{font-size:13px}
+.sec-head-title{font-size:12px;font-weight:600;color:var(--text)}
+.sec-head-badge{background:var(--cyan-dim);color:var(--cyan);font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid rgba(0,229,192,.25);margin-left:auto;letter-spacing:.06em}
+.freight-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border)}
+.fcard{padding:16px 14px;border-right:1px solid var(--border);position:relative}
+.fcard:last-child{border-right:none}
+.fcard:hover{background:rgba(255,255,255,.02)}
+.fcard.best{background:rgba(0,229,192,.06)}
+.fcard.best::before{content:'BEST VALUE';position:absolute;top:10px;right:10px;background:var(--cyan);color:#0a1a12;font-size:7px;font-weight:800;padding:2px 5px;border-radius:4px;letter-spacing:.08em}
+.fcard-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.fcard-emoji{font-size:18px}
+.fcard-name{font-size:11px;font-weight:700;color:var(--text)}
+.fcard-cost{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--cyan);margin-bottom:3px}
+.fcard-transit{font-size:10px;color:var(--text3);margin-bottom:6px;font-family:var(--mono)}
+.fcard-note{font-size:10px;color:var(--text3);line-height:1.4}
+
+/* ─── PROFITABILITY ─── */
+.profit-section{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.hero-price-bar{background:linear-gradient(135deg,#0d1e3a,#0a1628);border-bottom:1px solid var(--border);padding:20px 22px;display:flex;align-items:center;justify-content:space-between}
+.hp-label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.hp-val{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--cyan);letter-spacing:-.02em}
+.hp-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.hp-right{text-align:right}
+.hp-mg{font-family:var(--mono);font-size:22px;font-weight:700}
+.hp-mg.green{color:var(--cyan)}.hp-mg.amber{color:var(--amber)}.hp-mg.red{color:var(--red)}
+.profit-kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+.pkpi{padding:14px 18px;border-right:1px solid var(--border)}
+.pkpi:last-child{border-right:none}
+.pkpi-label{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.pkpi-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text)}
+.pkpi-val.cyan{color:var(--cyan)}.pkpi-val.orange{color:var(--orange)}
+.pkpi-sub{font-size:9px;color:var(--text3);margin-top:2px}
+.profit-body{padding:18px}
+.traffic{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:9px;border:1px solid;margin-bottom:14px}
+.traffic.green{background:rgba(0,229,192,.07);border-color:rgba(0,229,192,.25)}
+.traffic.yellow{background:rgba(245,166,35,.07);border-color:rgba(245,166,35,.25)}
+.traffic.red{background:rgba(255,79,79,.07);border-color:rgba(255,79,79,.25)}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.traffic.green .tl-dot{background:var(--cyan)}
+.traffic.yellow .tl-dot{background:var(--amber)}
+.traffic.red .tl-dot{background:var(--red)}
+.tl-msg{font-size:12px;font-weight:600}
+.traffic.green .tl-msg{color:var(--cyan)}.traffic.yellow .tl-msg{color:var(--amber)}.traffic.red .tl-msg{color:var(--red)}
+.tl-hint{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5}
+.pbar-wrap{margin-bottom:14px}
+.pbar-row{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:5px;font-family:var(--mono)}
+.pbar{height:6px;background:var(--card2);border-radius:3px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:3px;transition:width .6s,background .4s}
+.prof-breakdown{background:var(--card);border:1px solid var(--border2);border-radius:10px;overflow:hidden}
+.pb-row{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1px solid var(--border);font-size:12px}
+.pb-row:last-child{border-bottom:none}
+.pb-row.group{background:rgba(0,229,192,.04);padding-top:10px;padding-bottom:4px}
+.pb-row.group .pb-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+.pb-row.group .pb-val{display:none}
+.pb-row.total{background:rgba(0,229,192,.08);border-top:1px solid rgba(0,229,192,.2)}
+.pb-row.total .pb-label{font-size:12px;font-weight:700;color:var(--text);font-family:var(--sans)}
+.pb-row.total .pb-val{font-size:14px;font-weight:700;color:var(--cyan);font-family:var(--mono)}
+.pb-label{color:var(--text2);font-family:var(--sans)}
+.pb-label.indent{padding-left:16px;color:var(--text3);font-size:11px}
+.pb-val{color:var(--text);font-family:var(--mono)}
+
+/* ─── SCENARIO TABLE ─── */
+.compare-table{width:100%;border-collapse:collapse}
+.compare-table th{background:var(--card2);padding:10px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.compare-table th:not(:first-child){text-align:right}
+.compare-table td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px;font-family:var(--mono);color:var(--text2)}
+.compare-table td:first-child{font-family:var(--sans);font-weight:600;color:var(--text)}
+.compare-table td:not(:first-child){text-align:right}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table tr:hover td{background:rgba(255,255,255,.02)}
+.best-col{color:var(--cyan)!important}
+.warn-col{color:var(--amber)!important}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0a1a12" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5M2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="sb-logo-name">GoodDeal</div>
+      <div class="sb-logo-role">Admin Backend</div>
+    </div>
+  </div>
+
+  <div class="kpi-section">
+    <div class="kpi-label">Live Platform KPIs</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-k">Pipeline</div><div class="kpi-v" id="kpi-pipeline">—</div><div class="kpi-delta">▲ 18.5%</div></div>
+      <div class="kpi"><div class="kpi-k">Active Deals</div><div class="kpi-v orange">47</div><div class="kpi-delta orange">▲ 12 new</div></div>
+      <div class="kpi"><div class="kpi-k">Avg Margin</div><div class="kpi-v" id="kpi-margin">—</div><div class="kpi-delta">▲ 2.3%</div></div>
+      <div class="kpi"><div class="kpi-k">Pending</div><div class="kpi-v orange">23</div><div class="kpi-delta orange">needs review</div></div>
+      <div class="kpi"><div class="kpi-k">Buyers</div><div class="kpi-v white">142</div><div class="kpi-delta muted">87% verified</div></div>
+      <div class="kpi"><div class="kpi-k">Suppliers</div><div class="kpi-v white">38</div><div class="kpi-delta muted">34 verified</div></div>
+    </div>
+  </div>
+
+  <div class="alert-bar">
+    <div class="alert-dot"></div>
+    <div class="alert-text">8 deals need immediate action today</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Operations</div>
+    <div class="nav-item active" onclick="setActiveNav(this);switchMainTab('calculator')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="5" width="10" height="8" rx="1"/><path d="M11 7h2.5l1.5 3v3H11V7z"/><circle cx="4" cy="14" r="1.2"/><circle cx="13" cy="14" r="1.2"/></svg>
+      Logistics
+    </div>
+    <div class="nav-item" onclick="setActiveNav(this);switchMainTab('incoterms')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5.5h6M5 10.5h4"/></svg>
+      Incoterm Results
+    </div>
+    <div class="nav-item" onclick="setActiveNav(this);switchMainTab('freight')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10l4-6 3 4 2-3 3 5"/></svg>
+      Freight Modes
+    </div>
+    <div class="nav-item" onclick="setActiveNav(this);switchMainTab('profitability')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+      Profitability
+    </div>
+    <div class="nav-item" onclick="setActiveNav(this);switchMainTab('scenario')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12V4M6 12V7M10 12V5M14 12V9"/></svg>
+      Scenario Compare
+    </div>
+    <div class="nav-item" onclick="setActiveNav(this);switchMainTab('inventory')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l6 3v6l-6 3-6-3V5z"/><path d="M8 2v14M2 5l6 3 6-3"/></svg>
+      Inventory
+    </div>
+    <div class="nav-item" onclick="setActiveNav(this);switchMainTab('suppliers')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Suppliers
+    </div>
+  </div>
+
+  <div class="sb-user">
+    <div class="user-row">
+      <div class="user-avatar">TM</div>
+      <div>
+        <div class="user-name">Trading Manager</div>
+        <div class="user-title">23 Years Experience</div>
+        <div class="user-live">LIVE SESSION</div>
+      </div>
+    </div>
+    <button class="sign-out">⊙ Sign Out</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <span style="font-size:16px">📦</span>
+    <span class="tb-title">Logistics Intelligence</span>
+    <div class="tb-right">
+      <span class="live-badge">LIVE</span>
+      <span class="tb-time" id="liveTime"></span>
+    </div>
+  </div>
+
+  <div class="main-tabs">
+    <div class="main-tab active" onclick="switchMainTab('calculator')">Calculator</div>
+    <div class="main-tab" onclick="switchMainTab('incoterms')">Incoterm Results</div>
+    <div class="main-tab" onclick="switchMainTab('freight')">Freight Modes</div>
+    <div class="main-tab" onclick="switchMainTab('profitability')">Profitability</div>
+    <div class="main-tab" onclick="switchMainTab('scenario')">Scenario Comparison</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ CALCULATOR ══ -->
+    <div class="view active" id="view-calculator">
+
+      <!-- Route & Cargo -->
+      <div class="panel-card">
+        <div class="pc-head"><span class="pc-head-icon">🗺️</span><span class="pc-head-title">Shipment Route & Cargo</span><span class="pc-head-sub">All fields auto-calculate on change</span></div>
+        <div class="pc-body">
+          <div class="form-row fg-3">
+            <div class="field"><label>Origin Country</label>
+              <select id="origin" onchange="calc()"><option>China</option><option>Hong Kong</option><option>South Korea</option><option>Japan</option><option>Germany</option><option>USA</option><option>India</option></select></div>
+            <div class="field"><label>Destination</label>
+              <select id="dest" onchange="calc()"><option>UAE — Dubai (Jebel Ali)</option><option>Nigeria — Lagos</option><option>Kenya — Nairobi</option><option>South Africa — JHB</option><option>Ghana — Accra</option><option>Saudi Arabia — Riyadh</option><option>Egypt — Cairo</option></select></div>
+            <div class="field"><label>Supplier Incoterm</label>
+              <select id="supplierTerm" onchange="calc()"><option>EXW</option><option>FCA</option><option>FOB</option><option>CIF</option></select></div>
+          </div>
+          <div class="form-row fg-4">
+            <div class="field"><label>Product / SKU</label><input type="text" id="prodDesc" value="Gaming Keyboard" oninput="calc()"></div>
+            <div class="field"><label>HS Code (optional)</label><input type="text" id="hsCode" placeholder="e.g. 8471.30"></div>
+            <div class="field"><label>Quantity (units)</label><input type="number" id="qty" value="5000" oninput="calc()"></div>
+            <div class="field"><label>Currency Display</label>
+              <select id="currency" onchange="calc()"><option value="3.67">AED (1 USD = 3.67)</option><option value="1">USD</option><option value="0.92">EUR</option></select></div>
+          </div>
+          <div class="form-row fg-4">
+            <div class="field"><label>Gross Weight (kg)</label><input type="number" id="gw" value="500" oninput="calc()"></div>
+            <div class="field"><label>Net Weight (kg)</label><input type="number" id="nw" value="450" oninput="calc()"></div>
+            <div class="field"><label>CBM (m³)</label><input type="number" id="cbm" value="3.5" step="0.1" oninput="calc()"></div>
+            <div class="field"><label>No. of Cartons</label><input type="number" id="cartons" value="50" oninput="calc()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost Parameters -->
+      <div class="panel-card">
+        <div class="pc-head"><span class="pc-head-icon">💰</span><span class="pc-head-title">Cost Parameters (USD)</span><span class="pc-head-sub">Internal sheet — not shown to customer</span></div>
+        <div class="pc-body">
+          <p class="sub-label">Base Costs</p>
+          <div class="form-row fg-4">
+            <div class="field"><label>Product Cost</label><input type="number" id="productCost" value="8" step="0.1" oninput="calc()"><div class="field-hint">per unit USD</div></div>
+            <div class="field"><label>Landed UAE</label><input type="number" id="landedUAE" value="1" step="0.1" oninput="calc()"><div class="field-hint">per unit USD</div></div>
+            <div class="field"><label>Export Handling</label><input type="number" id="exportHandling" value="0.5" step="0.1" oninput="calc()"><div class="field-hint">per unit USD</div></div>
+            <div class="field"><label>Port THC + Loading</label><input type="number" id="thc" value="175" oninput="calc()"><div class="field-hint">total shipment USD</div></div>
+          </div>
+          <hr class="divider">
+          <p class="sub-label">Freight & Insurance</p>
+          <div class="form-row fg-4">
+            <div class="field"><label>Real Freight Cost</label><input type="number" id="realFreight" value="1" step="0.1" oninput="calc()"><div class="field-hint">per unit — internal</div></div>
+            <div class="field"><label>Charged Freight</label><input type="number" id="chargedFreight" value="1.20" step="0.1" oninput="calc()"><div class="field-hint">per unit — in quote</div></div>
+            <div class="field"><label>Real Insurance</label><input type="number" id="realIns" value="0.08" step="0.01" oninput="calc()"><div class="field-hint">per unit — internal</div></div>
+            <div class="field"><label>Charged Insurance</label><input type="number" id="chargedIns" value="0.15" step="0.01" oninput="calc()"><div class="field-hint">per unit — in quote</div></div>
+          </div>
+          <hr class="divider">
+          <p class="sub-label">Hidden Buffers & Margin</p>
+          <div class="form-row fg-5">
+            <div class="field"><label>Product Margin</label><input type="number" id="productMargin" value="1.5" step="0.1" oninput="calc()"><div class="field-hint">per unit — hidden</div></div>
+            <div class="field"><label>Real FX Buffer</label><input type="number" id="realFX" value="0.05" step="0.01" oninput="calc()"></div>
+            <div class="field"><label>Charged FX Buffer</label><input type="number" id="chargedFX" value="0.20" step="0.01" oninput="calc()"></div>
+            <div class="field"><label>Import Duty %</label><input type="number" id="dutyRate" value="5" step="0.5" oninput="calc()"></div>
+            <div class="field"><label>VAT %</label><input type="number" id="vatRate" value="5" step="0.5" oninput="calc()"></div>
+            <div class="field"><label>Risk Buffer %</label><input type="number" id="riskRate" value="2" step="0.5" oninput="calc()"></div>
+            <div class="field"><label>Air Freight / unit</label><input type="number" id="airFreight" value="4.5" step="0.1" oninput="calc()"></div>
+            <div class="field"><label>Air Documentation</label><input type="number" id="airDocs" value="120" oninput="calc()"></div>
+            <div class="field"><label>Local Delivery</label><input type="number" id="localDel" value="200" oninput="calc()"></div>
+            <div class="field"><label>Warehouse</label><input type="number" id="warehouse" value="100" oninput="calc()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UAE TRADING INTELLIGENCE ANALYSIS -->
+      <div class="panel-card">
+        <div class="pc-head"><span class="pc-head-icon">🇦🇪</span><span class="pc-head-title">UAE Trading Intelligence — Real Margin Analysis</span><span class="pc-head-sub">Internal view — never show to buyer</span></div>
+        <div class="pc-body">
+
+          <!-- Margin type badges -->
+          <p class="sub-label">Margin Visibility Strategy</p>
+          <div class="margin-badge-row" style="margin-bottom:14px">
+            <span class="mbadge hidden">Product Margin — Hidden</span>
+            <span class="mbadge hidden">FX Buffer — Hidden</span>
+            <span class="mbadge hidden">Freight Margin — Hidden</span>
+            <span class="mbadge hidden">Insurance Margin — Hidden</span>
+            <span class="mbadge sometimes">Clearing Margin — Sometimes Hidden</span>
+          </div>
+
+          <!-- Internal vs Customer split -->
+          <div class="analysis-grid" style="margin-bottom:14px">
+            <!-- Internal sheet -->
+            <div class="analysis-card">
+              <div class="ac-head">
+                <div class="ac-head-dot" style="background:var(--cyan)"></div>
+                <div class="ac-head-title" style="color:var(--cyan)">🔒 Internal Sheet — Only You See</div>
+              </div>
+              <div class="ac-body">
+                <table class="sheet-table" id="internalSheet"></table>
+              </div>
+            </div>
+            <!-- Customer sheet -->
+            <div class="analysis-card">
+              <div class="ac-head">
+                <div class="ac-head-dot" style="background:var(--orange)"></div>
+                <div class="ac-head-title" style="color:var(--orange)">👁 Customer Only Sees</div>
+              </div>
+              <div class="ac-body">
+                <div class="quote-preview" id="quotePreview"></div>
+                <div style="margin-top:12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:11px 13px">
+                  <div style="font-size:9px;font-weight:700;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">⚠ Why No Breakdown?</div>
+                  <div style="font-size:11px;color:var(--text2);line-height:1.7">If buyer sees exact breakdown, they <span style="color:var(--text)">negotiate every line item</span>, compare with freight forwarders, and reduce your flexibility. Professional UAE traders always quote a <span style="color:var(--text)">Final CIF / DDP price only.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real vs Charged comparison bars -->
+          <p class="sub-label">Real Cost vs Charged — Hidden Margin Visualization</p>
+          <div class="analysis-card" style="margin-bottom:14px">
+            <div class="ac-body">
+              <div id="marginBars"></div>
+              <table class="sheet-table" style="margin-top:12px" id="hiddenMarginTable"></table>
+            </div>
+          </div>
+
+          <!-- Strategy callout -->
+          <div class="strategy-callout">
+            <div class="sc-title">🏆 Professional UAE Electronics Trading Strategy</div>
+            <div class="sc-body">
+              In B2B electronics re-export from Dubai, professional traders <span class="sc-highlight">keep margin inside</span>:
+              <span class="sc-tag">Product price</span> <span class="sc-tag">Freight</span> <span class="sc-tag">FX buffer</span>
+              <br><br>
+              Your total hidden margin on this deal: <span id="hiddenMarginTotal" class="sc-highlight" style="color:var(--cyan)">—</span> per unit
+              (<span id="hiddenMarginPct" style="color:var(--cyan)">—</span> above real cost).
+              This is <span class="sc-highlight">completely normal and expected</span> in Dubai trading.
+              <br><br>
+              Final quote to customer: <span id="strategyFinalQuote" class="sc-highlight" style="color:var(--cyan)">—</span>
+              <span style="color:var(--text3)"> — No breakdown. No line items.</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end calculator view -->
+
+    <!-- ══ INCOTERMS ══ -->
+    <div class="view" id="view-incoterms">
+      <div class="inco-section">
+        <div class="inco-head">
+          <span style="font-size:14px">📋</span>
+          <span class="inco-head-title">Incoterm Deal Scenarios — Case by Case Breakdown</span>
+          <span class="inco-head-sub">Select to see full cost & risk split</span>
+        </div>
+        <div style="padding:14px 18px 0"><div class="chain-visual" id="chainVisual"></div></div>
+        <div class="tab-bar" id="incoTabBar">
+          <div class="tab active" onclick="switchInco('EXW')">Ex-Works (EXW)</div>
+          <div class="tab" onclick="switchInco('FCA')">FCA</div>
+          <div class="tab" onclick="switchInco('FOB')">FOB</div>
+          <div class="tab" onclick="switchInco('CIF')">CIF</div>
+          <div class="tab" onclick="switchInco('DDP')">DDP</div>
+          <div class="tab" onclick="switchInco('AIR')">✈ Air Cargo</div>
+        </div>
+        <div class="inco-body" id="incoBody"></div>
+      </div>
+    </div>
+
+    <!-- ══ FREIGHT ══ -->
+    <div class="view" id="view-freight">
+      <div class="freight-section">
+        <div class="sec-head"><span class="sec-head-icon">🚢</span><span class="sec-head-title">Freight Mode Comparison</span><span class="sec-head-badge">AUTO RECOMMENDED</span></div>
+        <div class="freight-grid" id="freightGrid"></div>
+      </div>
+      <div class="panel-card">
+        <div class="sec-head"><span class="sec-head-icon">📊</span><span class="sec-head-title">Freight Impact on Margin</span></div>
+        <div style="padding:16px 18px"><table class="compare-table" id="freightImpactTable"></table></div>
+      </div>
+    </div>
+
+    <!-- ══ PROFITABILITY ══ -->
+    <div class="view" id="view-profitability">
+      <div class="profit-section">
+        <div class="hero-price-bar" id="heroPriceBar"></div>
+        <div class="profit-kpis" id="profitKpis"></div>
+        <div class="profit-body">
+          <div id="trafficBlock"></div>
+          <div class="pbar-wrap" id="marginBarProfit"></div>
+          <div class="prof-breakdown" id="fullBreakdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCENARIO ══ -->
+    <div class="view" id="view-scenario">
+      <div class="panel-card">
+        <div class="sec-head"><span class="sec-head-icon">⚖️</span><span class="sec-head-title">Air vs LCL vs FCL — Scenario Comparison</span><span class="sec-head-badge">BEST HIGHLIGHTED</span></div>
+        <div style="padding:16px 18px"><table class="compare-table" id="scenarioTable"></table></div>
+      </div>
+    </div>
+
+    <!-- Placeholder views -->
+    <div class="view" id="view-inventory"><div class="panel-card"><div class="pc-head"><span class="pc-head-icon">🗂️</span><span class="pc-head-title">Inventory</span></div><div class="pc-body" style="color:var(--text3);padding:32px 0;text-align:center">Inventory module — coming soon.</div></div></div>
+    <div class="view" id="view-suppliers"><div class="panel-card"><div class="pc-head"><span class="pc-head-icon">🏭</span><span class="pc-head-title">Suppliers</span></div><div class="pc-body" style="color:var(--text3);padding:32px 0;text-align:center">Supplier management module — coming soon.</div></div></div>
+
+  </div>
+</div>
+
+<script>
+var currentInco='DDP';
+
+function g(id){return document.getElementById(id);}
+function v(id){return parseFloat(g(id)&&g(id).value)||0;}
+function fmt(n){
+  var r=v('currency')||3.67;
+  var sym=r===1?'USD ':r===0.92?'EUR ':'AED ';
+  return sym+Math.round(n*r).toLocaleString('en-US');
+}
+function fmtU(n,dp){return'$'+(dp?n.toFixed(dp):Math.round(n).toLocaleString());}
+function pct(n){return n.toFixed(1)+'%';}
+
+// Clock
+function updateClock(){
+  var now=new Date();
+  var el=g('liveTime');
+  if(el)el.textContent=now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' · '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' GST';
+}
+setInterval(updateClock,60000);updateClock();
+
+// Nav
+function setActiveNav(el){
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  el.classList.add('active');
+}
+function switchMainTab(tab){
+  var tabs=['calculator','incoterms','freight','profitability','scenario','inventory','suppliers'];
+  document.querySelectorAll('.main-tab').forEach(function(el,i){el.classList.toggle('active',tabs[i]===tab);});
+  document.querySelectorAll('.view').forEach(function(el){el.classList.toggle('active',el.id==='view-'+tab);});
+  calc();
+}
+function switchInco(code){
+  currentInco=code;
+  ['EXW','FCA','FOB','CIF','DDP','AIR'].forEach(function(c,i){
+    g('incoTabBar').querySelectorAll('.tab')[i].classList.toggle('active',c===code);
+  });
+  renderIncoBody();
+}
+
+/* ══ MAIN CALC ══ */
+var C={};
+function calc(){
+  var qty=v('qty')||1;
+  var pc=v('productCost');           // per unit
+  var lu=v('landedUAE');             // per unit
+  var eh=v('exportHandling');        // per unit
+  var pm=v('productMargin');         // per unit hidden margin
+  var thc=v('thc');                  // total shipment
+  var rf=v('realFreight');           // per unit real
+  var cf=v('chargedFreight');        // per unit charged
+  var ri=v('realIns');               // per unit real
+  var ci=v('chargedIns');            // per unit charged
+  var rFX=v('realFX');
+  var cFX=v('chargedFX');
+  var duty=v('dutyRate')/100;
+  var vat=v('vatRate')/100;
+  var risk=v('riskRate')/100;
+  var af=v('airFreight');
+  var ad=v('airDocs');
+  var del=v('localDel');
+  var wh=v('warehouse');
+
+  // Per unit real cost
+  C.realUnit=pc+lu+eh+rf+ri+rFX;
+  // Per unit charged (what goes into quote)
+  C.chargedUnit=pc+lu+eh+pm+cf+ci+cFX;
+
+  // Shipment totals
+  C.EXW=(pc+lu)*qty;
+  C.FCA=C.EXW+(eh+rFX)*qty+thc*0.3;
+  C.FOB=C.FCA+thc+rf*qty*0.2;
+  var FOBu=C.FOB/qty;
+  C.insurance=FOBu*0.005*qty;
+  C.OCF=rf*qty+thc;
+  C.CIF=C.FOB+C.OCF+C.insurance;
+  C.importDuty=C.CIF*duty;
+  C.vamt=(C.CIF+C.importDuty)*vat;
+  C.riskAmt=C.CIF*risk;
+  C.DDP=C.CIF+C.importDuty+C.vamt+del+C.riskAmt+wh;
+  C.AirCIF=(pc+lu)*qty+af*qty+C.insurance+ad;
+  C.LCL=C.FOB+(C.OCF*1.38)+C.insurance;
+  C.Courier=(pc+lu)*qty+(af*1.45)*qty+ad;
+
+  // CUSTOMER QUOTE (CIF = charged freight+ins+fx per unit * qty)
+  C.CIF_quoted=C.chargedUnit*qty;
+  C.DDP_quoted=C.CIF_quoted+C.importDuty+C.vamt+del+C.riskAmt+wh;
+  C.SP=C.DDP_quoted;
+
+  // Profitability
+  C.realCost=C.realUnit*qty+thc+del+wh+C.importDuty+C.vamt+C.riskAmt;
+  C.netProfit=C.SP-C.realCost;
+  C.grossProfit=C.SP-(pc+lu)*qty;
+  C.netMargin=(C.netProfit/C.SP)*100;
+  C.unitSP=C.SP/qty;
+  C.hiddenMargin=C.chargedUnit-C.realUnit;
+  C.hiddenPct=((C.chargedUnit-C.realUnit)/C.realUnit)*100;
+
+  // Update sidebar KPIs
+  var ep=g('kpi-pipeline');if(ep)ep.textContent=fmt(C.SP);
+  var em=g('kpi-margin');if(em)em.textContent=pct(C.netMargin);
+
+  // Render active tab
+  renderUAEAnalysis();
+  var at=document.querySelector('.view.active');
+  if(at){
+    if(at.id==='view-incoterms')renderIncoterms();
+    if(at.id==='view-freight')renderFreight();
+    if(at.id==='view-profitability')renderProfitability();
+    if(at.id==='view-scenario')renderScenario();
+  }
+}
+
+/* ── UAE ANALYSIS ── */
+function renderUAEAnalysis(){
+  var qty=v('qty')||1;
+  var pc=v('productCost'),lu=v('landedUAE'),eh=v('exportHandling'),pm=v('productMargin');
+  var rf=v('realFreight'),cf=v('chargedFreight'),ri=v('realIns'),ci=v('chargedIns');
+  var rFX=v('realFX'),cFX=v('chargedFX');
+  var dest=g('dest')?g('dest').value:'Mombasa';
+  var prod=g('prodDesc')?g('prodDesc').value:'Product';
+  var term=g('supplierTerm')?g('supplierTerm').value:'CIF';
+
+  // Internal sheet
+  var is=g('internalSheet');
+  if(is){
+    var irows=[
+      ['Product Cost',fmtU(pc,2)],
+      ['Landed UAE',fmtU(lu,2)],
+      ['Export Handling',fmtU(eh,2)],
+      ['Product Margin (hidden)',fmtU(pm,2)],
+      ['Freight (real / charged)',fmtU(rf,2)+' / '+fmtU(cf,2)],
+      ['Insurance (real / charged)',fmtU(ri,2)+' / '+fmtU(ci,2)],
+      ['FX Buffer (real / charged)',fmtU(rFX,2)+' / '+fmtU(cFX,2)],
+      ['Final CIF per unit','$'+C.chargedUnit.toFixed(2)],
+    ];
+    is.innerHTML='<thead><tr><th>Component</th><th>Amount</th></tr></thead><tbody>'+
+      irows.map(function(r,i){
+        var last=(i===irows.length-1);
+        return '<tr'+(last?' style="background:rgba(0,229,192,.06)"':'')+'><td>'+r[0]+'</td><td class="'+(last?'charged':'real')+'">'+r[1]+'</td></tr>';
+      }).join('')+'</tbody>';
+  }
+
+  // Quote preview
+  var qp=g('quotePreview');
+  if(qp){
+    var destShort=dest.split('—')[1]||dest;
+    qp.innerHTML='<div class="qp-label">What Customer Receives</div>'+
+      '<div class="qp-row">'+
+        '<div><div class="qp-prod">'+prod+'</div><div class="qp-inco">'+term+' '+destShort.trim()+'</div></div>'+
+        '<div class="qp-price">'+fmtU(C.chargedUnit,2)+' / unit</div>'+
+      '</div>';
+  }
+
+  // Margin bars
+  var mb=g('marginBars');
+  if(mb){
+    var items=[
+      {label:'Freight',real:rf,charged:cf},
+      {label:'Insurance',real:ri,charged:ci},
+      {label:'FX Buffer',real:rFX,charged:cFX},
+      {label:'Product Margin',real:0,charged:pm},
+    ];
+    var maxVal=Math.max.apply(null,items.map(function(x){return Math.max(x.real,x.charged);}));
+    mb.innerHTML=items.map(function(it){
+      var rw=maxVal>0?Math.round((it.real/maxVal)*100):0;
+      var cw=maxVal>0?Math.round((it.charged/maxVal)*100):0;
+      return '<div class="cost-bar-row">'+
+        '<div class="cbr-label">'+it.label+'</div>'+
+        '<div class="cbr-bars">'+
+          '<div class="cbr-bar real" style="width:'+rw+'%"></div>'+
+          '<div class="cbr-bar charged" style="width:'+cw+'%"></div>'+
+        '</div>'+
+        '<div class="cbr-vals"><div class="cv-real">real: $'+it.real.toFixed(2)+'</div><div class="cv-charged">charged: $'+it.charged.toFixed(2)+'</div></div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // Hidden margin table
+  var hmt=g('hiddenMarginTable');
+  if(hmt){
+    var hrows=[
+      ['Freight','$'+rf.toFixed(2),'$'+cf.toFixed(2),'$'+(cf-rf).toFixed(2)],
+      ['Insurance','$'+ri.toFixed(2),'$'+ci.toFixed(2),'$'+(ci-ri).toFixed(2)],
+      ['FX Buffer','$'+rFX.toFixed(2),'$'+cFX.toFixed(2),'$'+(cFX-rFX).toFixed(2)],
+      ['Product Margin','$0.00','$'+pm.toFixed(2),'$'+pm.toFixed(2)],
+    ];
+    var totalHidden=C.hiddenMargin;
+    hmt.innerHTML='<thead><tr><th>Component</th><th>Real Cost</th><th>Charged</th><th>Hidden Margin</th></tr></thead><tbody>'+
+      hrows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="real">'+r[1]+'</td><td class="charged">'+r[2]+'</td><td class="diff">'+r[3]+'</td></tr>';}).join('')+
+      '<tr style="background:rgba(0,229,192,.06)"><td>TOTAL HIDDEN</td><td></td><td></td><td class="charged">$'+totalHidden.toFixed(2)+' / unit</td></tr>'+
+      '</tbody>';
+  }
+
+  // Strategy footer
+  var hmt2=g('hiddenMarginTotal');if(hmt2)hmt2.textContent='$'+C.hiddenMargin.toFixed(2);
+  var hmp=g('hiddenMarginPct');if(hmp)hmp.textContent=pct(C.hiddenPct)+' markup';
+  var sfq=g('strategyFinalQuote');if(sfq)sfq.textContent=fmtU(C.chargedUnit,2)+' CIF';
+}
+
+/* ── INCOTERMS ── */
+var INCO_DATA={
+  EXW:{icon:'🏭',title:'Ex Works (EXW)',desc:'Seller makes goods available at their premises. Buyer arranges all transportation, export formalities, and bears all costs from that point.',example:'GoodDeal Example: Supplier EXW Shenzhen Factory. GoodDeal arranges all pickup and shipping.',seller:['Make goods available at named place','Provide commercial invoice & packing list'],buyer:['Export clearance & documentation','All trucking from factory to port','Ocean/air freight & insurance','Import customs & duties','Last-mile delivery']},
+  FCA:{icon:'🚛',title:'Free Carrier (FCA)',desc:'Seller delivers goods to a named carrier or nominated party at seller\'s premises or another named place.',example:'GoodDeal Example: Supplier FCA Shenzhen Port. Seller delivers to forwarder at port.',seller:['All costs to named carrier point','Export clearance & documentation','Loading on departing transport'],buyer:['Main carriage (ocean/air freight)','Insurance','Import customs & duties','Last-mile delivery']},
+  FOB:{icon:'⚓',title:'Free On Board (FOB)',desc:'Seller loads goods on the vessel at the named port. Risk transfers once goods are on board.',example:'GoodDeal Example: FOB Shenzhen — Seller loads onto vessel. GoodDeal pays freight from there.',seller:['All origin costs to named port','Export clearance','Loading onto vessel'],buyer:['Ocean freight & insurance','Import customs & duties at destination','Port handling at destination','Last-mile delivery']},
+  CIF:{icon:'🌊',title:'Cost, Insurance & Freight (CIF)',desc:'Seller pays for carriage and insurance to the named destination port. Risk passes to buyer once goods are loaded on vessel.',example:'GoodDeal Example: CIF Dubai Jebel Ali. Seller arranges shipping and insurance to Dubai.',seller:['All origin costs & export docs','Ocean freight to destination port','Minimum insurance coverage (110% of value)'],buyer:['Import customs & duties','Port handling at destination','Last-mile delivery']},
+  DDP:{icon:'🏠',title:'Delivered Duty Paid (DDP)',desc:'Seller delivers to buyer\'s named destination, all duties paid. Maximum convenience for buyer.',example:'GoodDeal Example: Supplier DDP to Dubai warehouse. Buyer just receives goods.',seller:['Everything — product, freight, insurance, import duty, VAT, last-mile delivery'],buyer:['The DDP unit price only — nothing else','Possible storage handling at their warehouse']},
+  AIR:{icon:'✈️',title:'Air Cargo CIF',desc:'Same CIF risk terms but via air freight. Faster transit, higher cost — ideal for urgent, high-value electronics.',example:'GoodDeal Example: Air CIF Dubai for urgent smartphone restocks.',seller:['Air freight to destination airport','Insurance (110% FOB value)','Export clearance & air documentation'],buyer:['Import customs & duties','Airport handling','Last-mile delivery']}
+};
+
+function renderIncoterms(){
+  var chain=g('chainVisual');
+  if(chain){
+    var items=[['EXW',C.EXW],['FCA',C.FCA],['FOB',C.FOB],['CIF',C.CIF],['DDP',C.DDP]];
+    chain.innerHTML=items.map(function(t,i){
+      var ac=t[0]===currentInco||(currentInco==='AIR'&&i===4);
+      return (i>0?'<span class="cv-arrow">›</span>':'')+
+        '<div class="cv-item'+(ac?' active':'')+'" onclick="switchInco(\''+t[0]+'\')">'+
+        '<div class="cv-code">'+t[0]+'</div><div class="cv-amt">'+fmt(Math.round(t[1]))+'</div></div>';
+    }).join('');
+  }
+  renderIncoBody();
+}
+
+function renderIncoBody(){
+  var body=g('incoBody');if(!body)return;
+  var d=INCO_DATA[currentInco];if(!d)return;
+  var costVal={EXW:C.EXW,FCA:C.FCA,FOB:C.FOB,CIF:C.CIF,DDP:C.DDP,AIR:C.AirCIF}[currentInco]||0;
+  var qty=v('qty')||1;
+
+  function row(label,val,neg,sub){return'<tr class="'+(sub?'row-sub':'')+'"><td class="rl'+(sub?' indent':'')+'">'+label+'</td><td class="rv'+(neg?' neg':'')+'">'+fmt(Math.round(val))+'</td></tr>';}
+  function total(label,val){return'<tr class="row-total"><td class="rl">'+label+'</td><td class="rv">'+fmt(Math.round(val))+'</td></tr>';}
+
+  var brows='';
+  switch(currentInco){
+    case 'EXW':brows+=row('EXW Price ('+qty.toLocaleString()+' × '+fmt(Math.round(C.EXW/qty))+')',C.EXW)+row('Buyer: Trucking to port',v('thc')*0.3,true,true)+row('Buyer: Port charges',v('thc'),true,true)+total('Total at EXW',C.EXW);break;
+    case 'FCA':brows+=row('EXW Base',C.EXW)+row('Export handling',v('exportHandling')*qty,false,true)+row('Export docs',v('thc')*0.1,false,true)+total('FCA Total',C.FCA);break;
+    case 'FOB':brows+=row('FCA Base',C.FCA)+row('Port THC',v('thc'),false,true)+row('Vessel loading',v('thc')*0.15,false,true)+total('FOB Total',C.FOB)+row('Buyer: Ocean freight',C.OCF,true,true)+row('Buyer: Insurance',Math.round(C.insurance),true,true);break;
+    case 'CIF':brows+=row('FOB Base',C.FOB)+row('Seller: Ocean freight',C.OCF,true,true)+row('Seller: Insurance',Math.round(C.insurance),true,true)+total('CIF Total',C.CIF)+row('Buyer: Import duty',Math.round(C.importDuty),true,true)+row('Buyer: VAT',Math.round(C.vamt),true,true);break;
+    case 'DDP':brows+=row('DDP Price ('+qty.toLocaleString()+' × '+fmt(Math.round(C.DDP/qty))+')',C.DDP)+row('Buyer pays nothing more — seller absorbs all','0',false,true)+row('Seller absorbs: Freight',C.OCF,true,true)+row('Seller absorbs: Import Duty',Math.round(C.importDuty),true,true)+row('Seller absorbs: Port + Delivery',v('thc')+v('localDel'),true,true)+row('Seller absorbs: Insurance',Math.round(C.insurance),true,true)+row('Seller absorbs: VAT',Math.round(C.vamt),true,true)+total('Total DDP (Landed Cost)',C.DDP);break;
+    case 'AIR':brows+=row('EXW Base',C.EXW)+row('Air freight',v('airFreight')*qty,false,true)+row('Insurance',Math.round(C.insurance),false,true)+row('Air docs',v('airDocs'),false,true)+total('Air CIF Total',C.AirCIF)+row('Premium vs Sea CIF',Math.round(C.AirCIF-C.CIF),true,true);break;
+  }
+
+  body.innerHTML=
+    '<div class="inco-def"><div class="inco-def-icon">'+d.icon+'</div><div>'+
+    '<div class="inco-def-title">'+d.title+'</div>'+
+    '<div class="inco-def-desc">'+d.desc+'</div>'+
+    '<div class="inco-def-example">'+d.example+'</div></div></div>'+
+    '<div class="split-grid">'+
+    '<div class="split-card seller"><div class="split-head sh">✔ Seller Pays</div>'+d.seller.map(function(s){return'<div class="split-item">'+s+'</div>';}).join('')+'</div>'+
+    '<div class="split-card buyer"><div class="split-head bh">— Buyer Pays</div>'+d.buyer.map(function(s){return'<div class="split-item">'+s+'</div>';}).join('')+'</div></div>'+
+    '<div class="breakdown-section"><div class="bs-head"><span style="font-size:13px">🧾</span><span class="bs-head-title">Deal Cost Breakdown ('+getCL()+')</span></div>'+
+    '<table class="bt">'+brows+'</table></div>';
+}
+
+function getCL(){var r=v('currency');return r===1?'USD':r===0.92?'EUR':'AED';}
+
+/* ── FREIGHT ── */
+function renderFreight(){
+  var fg=g('freightGrid');if(!fg)return;
+  var modes=[
+    {name:'Sea FCL',emoji:'🚢',cost:C.CIF,transit:'18–25 days',note:'Best for >15 CBM. Lowest unit cost. Jebel Ali.'},
+    {name:'Sea LCL',emoji:'📦',cost:C.LCL,transit:'22–30 days',note:'Best for 2–15 CBM. Shared container.'},
+    {name:'Air Cargo',emoji:'✈️',cost:C.AirCIF,transit:'3–5 days',note:'Urgent, high-value, <500 kg.'},
+    {name:'Courier',emoji:'🚚',cost:C.Courier,transit:'1–3 days',note:'DHL/FedEx. Best under 50 kg.'},
+  ];
+  var minC=Math.min.apply(null,modes.map(function(m){return m.cost;}));
+  fg.innerHTML=modes.map(function(m){
+    var best=Math.round(m.cost)===Math.round(minC);
+    return'<div class="fcard'+(best?' best':'')+'">'+
+      '<div class="fcard-top"><span class="fcard-emoji">'+m.emoji+'</span><span class="fcard-name">'+m.name+'</span></div>'+
+      '<div class="fcard-cost">'+fmt(Math.round(m.cost))+'</div>'+
+      '<div class="fcard-transit">⏱ '+m.transit+'</div>'+
+      '<div class="fcard-note">'+m.note+'</div></div>';
+  }).join('');
+
+  var t=g('freightImpactTable');if(!t)return;
+  var mn=C.netMargin;
+  t.innerHTML='<thead><tr><th>Mode</th><th>Total Cost</th><th>Transit</th><th>Margin Impact</th><th>Customer Price</th></tr></thead><tbody>'+
+    [['Sea FCL',C.CIF,'18–25d',mn,C.SP],
+     ['Sea LCL',C.LCL,'22–30d',mn*(C.CIF/C.LCL),C.SP*(C.LCL/C.CIF)],
+     ['Air Cargo',C.AirCIF,'3–5d',mn*(C.CIF/C.AirCIF),C.SP*(C.AirCIF/C.CIF)],
+     ['Courier',C.Courier,'1–3d',mn*(C.CIF/C.Courier),C.SP*(C.Courier/C.CIF)]
+    ].map(function(r,i){
+      return'<tr><td>'+r[0]+'</td><td class="'+(i===0?'best-col':'')+'">'+fmt(Math.round(r[1]))+'</td><td>'+r[2]+'</td><td>'+pct(r[3])+'</td><td>'+fmt(Math.round(r[4]))+'</td></tr>';
+    }).join('')+'</tbody>';
+}
+
+/* ── PROFITABILITY ── */
+function renderProfitability(){
+  var mc=C.netMargin>=12?'var(--cyan)':C.netMargin>=5?'var(--amber)':'var(--red)';
+  var mcls=C.netMargin>=12?'green':C.netMargin>=5?'amber':'red';
+  var hp=g('heroPriceBar');
+  if(hp)hp.innerHTML=
+    '<div><div class="hp-label">Recommended Selling Price</div><div class="hp-val">'+fmt(Math.round(C.SP))+'</div><div class="hp-sub">Total landed + margins + buffers</div></div>'+
+    '<div class="hp-right"><div class="hp-label">Net Margin</div><div class="hp-mg '+mcls+'">'+pct(C.netMargin)+'</div><div class="hp-label" style="margin-top:8px">Net Profit</div><div style="font-family:var(--mono);font-size:14px;color:var(--text2)">'+fmt(Math.round(C.netProfit))+'</div></div>';
+  var pk=g('profitKpis');
+  if(pk)pk.innerHTML=[
+    {l:'Deal Value',v:fmt(Math.round(C.SP)),c:'cyan',s:'Selling price'},
+    {l:'Real Landed Cost',v:fmt(Math.round(C.realCost)),c:'',s:'All-in real cost'},
+    {l:'Hidden Margin',v:'$'+C.hiddenMargin.toFixed(2)+'/unit',c:'orange',s:pct(C.hiddenPct)+' markup'},
+    {l:'Gross Profit',v:fmt(Math.round(C.grossProfit)),c:'cyan',s:'vs product cost'},
+  ].map(function(k){return'<div class="pkpi"><div class="pkpi-label">'+k.l+'</div><div class="pkpi-val'+(k.c?' '+k.c:'')+'">'+k.v+'</div><div class="pkpi-sub">'+k.s+'</div></div>';}).join('');
+
+  var tl=g('trafficBlock');
+  if(tl){
+    var msg,hint;
+    if(C.netMargin>=12){msg='Deal is Profitable — Strong margin above 12% threshold.';hint='Net margin '+pct(C.netMargin)+' is healthy for UAE re-export electronics. Hidden margins well balanced across freight, FX, and product.';}
+    else if(C.netMargin>=5){msg='Low Margin — Review logistics costs or increase selling price.';hint='Net margin '+pct(C.netMargin)+' below 12% target. Increase charged freight or FX buffer, or renegotiate supplier price.';}
+    else{msg='Loss Risk — Costs exceed target. Immediate action required.';hint='Net margin '+pct(C.netMargin)+' critically low. Review product cost, reduce risk buffer, or significantly increase unit selling price.';}
+    tl.innerHTML='<div class="traffic '+mcls+'"><div class="tl-dot"></div><div><div class="tl-msg">'+msg+'</div><div class="tl-hint">'+hint+'</div></div></div>';
+  }
+  var mbp=g('marginBarProfit');
+  if(mbp)mbp.innerHTML=
+    '<div class="pbar-row"><span>0%</span><span style="color:'+mc+';font-weight:700">'+pct(C.netMargin)+'</span><span>30%</span></div>'+
+    '<div class="pbar"><div class="pbar-fill" style="width:'+Math.min(C.netMargin/30*100,100)+'%;background:'+mc+'"></div></div>';
+
+  var fb=g('fullBreakdown');
+  if(!fb)return;
+  var qty=v('qty')||1;
+  var rows=[
+    {type:'group',l:'Product & Origin'},
+    {l:'Product Cost ('+qty.toLocaleString()+' units)',v:fmt(Math.round(v('productCost')*qty))},
+    {l:'Landed UAE',v:fmt(Math.round(v('landedUAE')*qty)),indent:true},
+    {l:'Export Handling',v:fmt(Math.round(v('exportHandling')*qty)),indent:true},
+    {type:'total',l:'EXW Subtotal',v:fmt(Math.round(C.EXW))},
+    {type:'group',l:'Freight & Insurance (Real)'},
+    {l:'Ocean Freight',v:fmt(Math.round(v('realFreight')*qty)),indent:true},
+    {l:'Insurance',v:fmt(Math.round(v('realIns')*qty)),indent:true},
+    {l:'FX Buffer (real)',v:fmt(Math.round(v('realFX')*qty)),indent:true},
+    {type:'group',l:'Destination Costs'},
+    {l:'Import Duty ('+pct(v('dutyRate'))+')',v:fmt(Math.round(C.importDuty)),indent:true},
+    {l:'VAT ('+pct(v('vatRate'))+')',v:fmt(Math.round(C.vamt)),indent:true},
+    {l:'Local Delivery + Warehouse',v:fmt(v('localDel')+v('warehouse')),indent:true},
+    {l:'Risk Buffer ('+pct(v('riskRate'))+')',v:fmt(Math.round(C.riskAmt)),indent:true},
+    {type:'total',l:'Real Landed Cost (Internal)',v:fmt(Math.round(C.realCost))},
+    {type:'group',l:'Hidden Margins Added'},
+    {l:'Product Margin (hidden)',v:'$'+v('productMargin').toFixed(2)+'/unit → '+fmt(Math.round(v('productMargin')*qty)),indent:true},
+    {l:'Freight Markup',v:'$'+(v('chargedFreight')-v('realFreight')).toFixed(2)+'/unit → '+fmt(Math.round((v('chargedFreight')-v('realFreight'))*qty)),indent:true},
+    {l:'Insurance Markup',v:'$'+(v('chargedIns')-v('realIns')).toFixed(2)+'/unit',indent:true},
+    {l:'FX Buffer Markup',v:'$'+(v('chargedFX')-v('realFX')).toFixed(2)+'/unit',indent:true},
+    {type:'total',l:'Recommended Selling Price (CIF quoted)',v:fmt(Math.round(C.SP))},
+  ];
+  fb.innerHTML=rows.map(function(r){
+    if(r.type==='group')return'<div class="pb-row group"><span class="pb-label">'+r.l+'</span><span class="pb-val"></span></div>';
+    if(r.type==='total')return'<div class="pb-row total"><span class="pb-label">'+r.l+'</span><span class="pb-val">'+r.v+'</span></div>';
+    return'<div class="pb-row"><span class="pb-label'+(r.indent?' indent':'')+'">'+r.l+'</span><span class="pb-val">'+r.v+'</span></div>';
+  }).join('');
+}
+
+/* ── SCENARIO ── */
+function renderScenario(){
+  var t=g('scenarioTable');if(!t)return;
+  var mn=C.netMargin;
+  t.innerHTML='<thead><tr><th>Metric</th><th style="color:var(--cyan)">Sea FCL</th><th>Sea LCL</th><th>Air Cargo</th><th>Express Courier</th></tr></thead><tbody>'+
+    [['Total Cost',fmt(Math.round(C.CIF)),fmt(Math.round(C.LCL)),fmt(Math.round(C.AirCIF)),fmt(Math.round(C.Courier))],
+     ['Transit Time','18–25 days','22–30 days','3–5 days','1–3 days'],
+     ['Net Margin',pct(mn),pct(mn*(C.CIF/C.LCL)),pct(mn*(C.CIF/C.AirCIF)),pct(mn*(C.CIF/C.Courier))],
+     ['Customer Price',fmt(Math.round(C.SP)),fmt(Math.round(C.SP*(C.LCL/C.CIF))),fmt(Math.round(C.SP*(C.AirCIF/C.CIF))),fmt(Math.round(C.SP*(C.Courier/C.CIF)))],
+     ['Cost / kg',fmt(Math.round(C.CIF/(v('gw')||1))),fmt(Math.round(C.LCL/(v('gw')||1))),fmt(Math.round(C.AirCIF/(v('gw')||1))),fmt(Math.round(C.Courier/(v('gw')||1)))],
+     ['Verdict','✓ Best margin','Medium CBM','Urgent only','<50 kg only'],
+    ].map(function(r){
+      return'<tr>'+r.map(function(c,i){return'<td'+(i===1?' class="best-col"':i===3?' class="warn-col"':'')+'">'+c+'</td>';}).join('')+'</tr>';
+    }).join('')+'</tbody>';
+}
+
+calc();
+</script>
+</body>
+</html>
